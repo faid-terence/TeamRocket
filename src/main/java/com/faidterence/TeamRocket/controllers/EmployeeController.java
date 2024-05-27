@@ -2,7 +2,6 @@ package com.faidterence.TeamRocket.controllers;
 
 
 import com.faidterence.TeamRocket.dto.EmployeeDTO;
-import com.faidterence.TeamRocket.schemas.Employee;
 import com.faidterence.TeamRocket.services.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +16,7 @@ public class EmployeeController {
 
 
     @PostMapping("/employee")
-    public Employee createEmployee(@RequestBody EmployeeDTO employee) {
+    public EmployeeDTO createEmployee(@RequestBody EmployeeDTO employee) {
        return this.employeeService.createEmployee(employee);
     }
 }

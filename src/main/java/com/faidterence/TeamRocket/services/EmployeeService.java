@@ -1,6 +1,6 @@
 package com.faidterence.TeamRocket.services;
 
-import com.faidterence.TeamRocket.dto.DepartmentRepository;
+import com.faidterence.TeamRocket.repository.DepartmentRepository;
 import com.faidterence.TeamRocket.dto.EmployeeDTO;
 import com.faidterence.TeamRocket.repository.EmployeeRepository;
 import com.faidterence.TeamRocket.schemas.Department;
@@ -8,14 +8,17 @@ import com.faidterence.TeamRocket.schemas.Employee;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Service
 @AllArgsConstructor
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
-   private  final DepartmentRepository departmentRepository;
+    private final DepartmentRepository departmentRepository;
 
-    public Employee createEmployee(EmployeeDTO employeeDTO) {
+    public EmployeeDTO createEmployee(EmployeeDTO employeeDTO) {
         if (employeeRepository.existsByEmail(employeeDTO.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
@@ -36,9 +39,11 @@ public class EmployeeService {
         employee.setDepartment(department);
 
         // Fetch and set Manager by ID
-        Employee manager = employeeRepository.findById(employeeDTO.getManagerId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid manager ID"));
-        employee.setManager(manager);
+        if (employeeDTO.getManagerId() != null) {
+            Employee manager = employeeRepository.findById(employeeDTO.getManagerId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid manager ID"));
+            employee.setManager(manager);
+        }
 
         employee.setSalary(employeeDTO.getSalary());
         employee.setAddress(employeeDTO.getAddress());
@@ -50,6 +55,42 @@ public class EmployeeService {
         employee.setEmergencyContactPhone(employeeDTO.getEmergencyContactPhone());
         employee.setStatus(Employee.Status.valueOf(employeeDTO.getStatus()));
 
-        return employeeRepository.save(employee);
+        // Set created and updated timestamps
+        LocalDateTime now = LocalDateTime.now();
+        employee.setCreatedAt(now);
+        employee.setUpdatedAt(now);
+
+        employee = employeeRepository.save(employee);
+
+        // Prepare the response DTO
+        EmployeeDTO createdEmployeeDTO = new EmployeeDTO();
+        createdEmployeeDTO.setId(employee.getId());
+        createdEmployeeDTO.setFirstName(employee.getFirstName());
+        createdEmployeeDTO.setLastName(employee.getLastName());
+        createdEmployeeDTO.setDateOfBirth(employee.getDateOfBirth());
+        createdEmployeeDTO.setGender(employee.getGender().toString());
+        createdEmployeeDTO.setEmail(employee.getEmail());
+        createdEmployeeDTO.setPhoneNumber(employee.getPhoneNumber());
+        createdEmployeeDTO.setHireDate(employee.getHireDate());
+        createdEmployeeDTO.setJobTitle(employee.getJobTitle());
+        createdEmployeeDTO.setDepartmentId(employee.getDepartment().getId());
+        createdEmployeeDTO.setDepartmentName(employee.getDepartment().getDepartmentName());
+        if (employee.getManager() != null) {
+            createdEmployeeDTO.setManagerId(employee.getManager().getId());
+            createdEmployeeDTO.setManagerName(employee.getManager().getFirstName() + " " + employee.getManager().getLastName());
+        }
+        createdEmployeeDTO.setSalary(employee.getSalary());
+        createdEmployeeDTO.setAddress(employee.getAddress());
+        createdEmployeeDTO.setCity(employee.getCity());
+        createdEmployeeDTO.setState(employee.getState());
+        createdEmployeeDTO.setZipCode(employee.getZipCode());
+        createdEmployeeDTO.setCountry(employee.getCountry());
+        createdEmployeeDTO.setEmergencyContactName(employee.getEmergencyContactName());
+        createdEmployeeDTO.setEmergencyContactPhone(employee.getEmergencyContactPhone());
+        createdEmployeeDTO.setStatus(employee.getStatus().toString());
+        createdEmployeeDTO.setCreatedAt(employee.getCreatedAt().toLocalDate());
+        createdEmployeeDTO.setUpdatedAt(employee.getUpdatedAt().toLocalDate());
+
+        return createdEmployeeDTO;
     }
 }
