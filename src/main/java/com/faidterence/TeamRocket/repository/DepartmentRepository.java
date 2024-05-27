@@ -1,4 +1,4 @@
-package com.faidterence.TeamRocket.dto;
+package com.faidterence.TeamRocket.repository;
 
 import com.faidterence.TeamRocket.schemas.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
